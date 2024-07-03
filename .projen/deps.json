@@ -1,6 +1,10 @@
 {
   "dependencies": [
     {
+      "name": "@types/aws-lambda",
+      "type": "build"
+    },
+    {
       "name": "@types/jest",
       "type": "build"
     },
@@ -29,11 +33,19 @@
       "type": "build"
     },
     {
+      "name": "eslint-config-prettier",
+      "type": "build"
+    },
+    {
       "name": "eslint-import-resolver-typescript",
       "type": "build"
     },
     {
       "name": "eslint-plugin-import",
+      "type": "build"
+    },
+    {
+      "name": "eslint-plugin-prettier",
       "type": "build"
     },
     {
@@ -48,6 +60,10 @@
     {
       "name": "jest-junit",
       "version": "^15",
+      "type": "build"
+    },
+    {
+      "name": "prettier",
       "type": "build"
     },
     {
@@ -67,8 +83,35 @@
       "type": "build"
     },
     {
+      "name": "@aws-sdk/client-bedrock-agent",
+      "version": "3.600.0",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-sdk/client-opensearchserverless",
+      "version": "3.600.0",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-sdk/client-ssm",
+      "version": "3.600.0",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-sdk/credential-provider-node",
+      "type": "runtime"
+    },
+    {
+      "name": "@opensearch-project/opensearch",
+      "type": "runtime"
+    },
+    {
       "name": "aws-cdk-lib",
       "version": "^2.1.0",
+      "type": "runtime"
+    },
+    {
+      "name": "aws-lambda",
       "type": "runtime"
     },
     {
