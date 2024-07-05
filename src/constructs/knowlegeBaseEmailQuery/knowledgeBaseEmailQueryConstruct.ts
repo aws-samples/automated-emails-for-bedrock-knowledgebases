@@ -10,7 +10,7 @@ import {
   DefinitionBody,
   StateMachine,
 } from "aws-cdk-lib/aws-stepfunctions";
-import { CfnOutput, Duration } from "aws-cdk-lib";
+import { CfnOutput, Duration, Stack } from "aws-cdk-lib";
 
 import { Rule } from "aws-cdk-lib/aws-events";
 import { SfnStateMachine } from "aws-cdk-lib/aws-events-targets";
@@ -24,7 +24,7 @@ import {
 } from "aws-cdk-lib/custom-resources";
 import { RetentionDays } from "aws-cdk-lib/aws-logs";
 import { Effect, PolicyStatement, ServicePrincipal } from "aws-cdk-lib/aws-iam";
-import { Route53EmailConfigurationConstruct } from "../route53EmailConfiguration/route53EmailConfigurationConstruct";
+import { HostedZone, MxRecord } from "aws-cdk-lib/aws-route53";
 
 export interface IKnowledgeBaseEmailQueryProps {
   namePrefix: string;
@@ -60,16 +60,22 @@ export class KnowledgeBaseEmailQuery extends Construct {
 
     if (props.route53HostedZone) {
       // Domain name is managed in Route53.  Autowire
-      const route53Config = new Route53EmailConfigurationConstruct(
-        this,
-        "Route53EmailConfiguration",
-        {
-          hostedZoneName: props.route53HostedZone,
-        },
-      );
+      const hostedZone = HostedZone.fromLookup(this, "PublicHostedZone", {
+        domainName: props.route53HostedZone,
+      });
+
+      new MxRecord(this, "Route53MXRecord", {
+        values: [
+          {
+            hostName: `inbound-smtp.${Stack.of(this).region}.amazonaws.com`,
+            priority: 123,
+          },
+        ],
+        zone: hostedZone,
+      });
 
       new EmailIdentity(this, "SESEmailIdentity", {
-        identity: Identity.publicHostedZone(route53Config.hostedZone),
+        identity: Identity.publicHostedZone(hostedZone),
       });
     } else {
       new EmailIdentity(this, "SESEmailIdentity", {
