@@ -8,7 +8,7 @@ import {
   createKnowledgeBase,
   deleteKnowledgeBase,
   updateKnowledgeBase,
-} from "../util/bedrockKnowledgeBaseAPIUtil";
+} from "../../../util/bedrockKnowledgeBaseAPIUtil";
 import {
   createAccessPolicy,
   createCollection,
@@ -19,8 +19,8 @@ import {
   deleteCollection,
   deleteSecurityPolicy,
   updateCollection,
-} from "../util/openSearchServerlessAPIUtil";
-import { deleteParameter } from "../util/ssmAPIUtil";
+} from "../../../util/openSearchServerlessAPIUtil";
+import { deleteParameter } from "../../../util/ssmAPIUtil";
 
 export const handler = async (
   event: CdkCustomResourceEvent,

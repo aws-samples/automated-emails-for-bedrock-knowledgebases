@@ -131,7 +131,8 @@ export class BedrockKnowledgeBase extends Construct {
       this,
       "knowledgeBaseCustomResourceLambda",
       {
-        entry: "./src/functions/crudKnowledgeBase.ts",
+        entry:
+          "./src/constructs/bedrockKnowledgeBase/functions/crudKnowledgeBase.ts",
         handler: "handler",
         runtime: Runtime.NODEJS_LATEST,
         architecture: Architecture.ARM_64,
@@ -193,7 +194,8 @@ export class BedrockKnowledgeBase extends Construct {
       this,
       "syncKnowledgeBaseLambda",
       {
-        entry: "./src/functions/syncKnowledgeBase.ts",
+        entry:
+          "./src/constructs/bedrockKnowledgeBase/functions/syncKnowledgeBase.ts",
         handler: "handler",
         runtime: Runtime.NODEJS_LATEST,
         architecture: Architecture.ARM_64,

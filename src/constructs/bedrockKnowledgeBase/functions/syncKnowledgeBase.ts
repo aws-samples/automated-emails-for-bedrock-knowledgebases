@@ -1,4 +1,4 @@
-import { syncKnowledgeBase } from "../util/bedrockKnowledgeBaseAPIUtil";
+import { syncKnowledgeBase } from "../../../util/bedrockKnowledgeBaseAPIUtil";
 
 export const handler = async (event: any): Promise<any> => {
   console.log(process.env.KNOWLEDGE_BASE_ID);
