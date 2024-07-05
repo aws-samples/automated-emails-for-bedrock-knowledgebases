@@ -34,19 +34,10 @@ npx cdk deploy --context recipientEmail=foo@bar.com
 # Deployment Steps
 
 1. Configure Email to allow SES to receive messages
-   2. If you want to receive email on address for a domain managed in Route53, this will be autowired for you if you provide the ROUTE53_HOSTED_ZONE environment variable
-   3. If you managed your domain elsewhere you need to confirm your email identity in SES
-2. Deploy App
-```sh
-npx cdk deploy
-```
-3. Upload Documents to S3
-
-
-
-
-# API Call to enable access to a model
-```typescript
-https://bedrock.us-east-1.amazonaws.com/foundation-model-entitlement
-{"modelId":"amazon.titan-embed-text-v1"}
-```
+   1. If you want to receive email on address for a domain managed in Route53, this will be autowired for you if you provide the ROUTE53_HOSTED_ZONE environment variable
+   1. If you managed your domain elsewhere you need to confirm your email identity in SES
+1. Deploy App
+    ```sh
+    npx cdk deploy --context recipientEmail=help@mybedrockknowledgebaseapp.com --context route53HostedZone mybedrockkonwledgebaseapp.com
+    ```
+1. Upload Documents to S3
