@@ -8,6 +8,7 @@ import {
   Choice,
   Condition,
   DefinitionBody,
+  LogLevel,
   StateMachine,
 } from "aws-cdk-lib/aws-stepfunctions";
 import { CfnOutput, Duration, Stack } from "aws-cdk-lib";
@@ -22,7 +23,7 @@ import {
   AwsSdkCall,
   PhysicalResourceId,
 } from "aws-cdk-lib/custom-resources";
-import { RetentionDays } from "aws-cdk-lib/aws-logs";
+import { LogGroup, RetentionDays } from "aws-cdk-lib/aws-logs";
 import { Effect, PolicyStatement, ServicePrincipal } from "aws-cdk-lib/aws-iam";
 import { HostedZone, MxRecord } from "aws-cdk-lib/aws-route53";
 
@@ -203,6 +204,10 @@ export class KnowledgeBaseEmailQuery extends Construct {
           .otherwise(sendEmailToSupportSFTask),
       );
 
+    const stepFunctionLogGroup = new LogGroup(this, "StepFunctionLogGroup", {
+      retention: RetentionDays.ONE_DAY,
+    });
+
     const stateMachine = new StateMachine(
       this,
       "EmailBedrockKnowledgeBaseStateMachine",
@@ -211,7 +216,20 @@ export class KnowledgeBaseEmailQuery extends Construct {
         timeout: Duration.minutes(10),
         comment:
           "State machine for querying knowledge base and responding to customer",
+        logs: {
+          destination: stepFunctionLogGroup,
+          level: LogLevel.ALL,
+        },
       },
+    );
+
+    stateMachine.addToRolePolicy(
+      new PolicyStatement({
+        sid: "canWriteToCloudWatchLogs",
+        effect: Effect.ALLOW,
+        actions: ["logs:*"],
+        resources: [stepFunctionLogGroup.logGroupArn],
+      }),
     );
 
     // EventBridge rule to trigger Step Function when new question shows up in S3

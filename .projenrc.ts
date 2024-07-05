@@ -13,7 +13,7 @@ const project = new awscdk.AwsCdkTypeScriptApp({
       trailingComma: TrailingComma.ALL,
     },
   },
-  gitignore: [".idea/"],
+  gitignore: [".idea/", "cdk.context.json"],
   context: {
     namePrefix: "automate-emails-bedrock",
     embedModelArn:

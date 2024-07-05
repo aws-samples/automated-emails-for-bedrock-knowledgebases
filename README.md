@@ -1,4 +1,4 @@
-# Automated Email Queries to Amazon Bedrock Knowledgebases
+# Automated Email Queries to Amazon Bedrock Knowledge Bases
 
 This CDK application is a demonstration of using email and Retrieval Augmented Generation (RAG) to automate email queries to an existing knowledge base.
 
@@ -41,3 +41,12 @@ npx cdk deploy --context recipientEmail=foo@bar.com
     npx cdk deploy --context recipientEmail=help@mybedrockknowledgebaseapp.com --context route53HostedZone mybedrockkonwledgebaseapp.com
     ```
 1. Upload Documents to S3
+   1. Find the Name of the KnowledgeBaseSourceBucket from the CloudFormation outputs
+   2. Sync knowledge base contents to S3 bucket using `aws s3 sync . s3://{}`
+
+# Useful Commands
+* `npx cdk synth` Synthesize the CloudFormation template
+* `npx cdk deploy` Deploy all 
+
+# Notes and Acknowledgements
+- This app was written with [projen](https://projen.io/) to automate configuration best practices
