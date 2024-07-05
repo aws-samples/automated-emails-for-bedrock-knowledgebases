@@ -26,6 +26,7 @@ import {
 import { LogGroup, RetentionDays } from "aws-cdk-lib/aws-logs";
 import { Effect, PolicyStatement, ServicePrincipal } from "aws-cdk-lib/aws-iam";
 import { HostedZone, MxRecord } from "aws-cdk-lib/aws-route53";
+import { StringParameter } from "aws-cdk-lib/aws-ssm";
 
 export interface IKnowledgeBaseEmailQueryProps {
   namePrefix: string;
@@ -126,11 +127,16 @@ export class KnowledgeBaseEmailQuery extends Construct {
     });
 
     // DynamoDB Table for storage of questions and status
-    new TableV2(this, "QuestionStatusTable", {
+    const questionDynamoTable = new TableV2(this, "QuestionStatusTable", {
       partitionKey: {
         name: "PK",
         type: AttributeType.STRING,
       },
+    });
+
+    new StringParameter(this, "DynamoTableParam", {
+      parameterName: `/${props.namePrefix}/QuestionDynamoTableArn`,
+      stringValue: questionDynamoTable.tableArn,
     });
 
     const writeToDynamoLambda = new Function(this, "WriteToDynamoFunction", {
