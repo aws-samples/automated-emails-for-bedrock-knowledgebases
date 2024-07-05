@@ -14,7 +14,15 @@ const project = new awscdk.AwsCdkTypeScriptApp({
     },
   },
   gitignore: [".idea/"],
-
+  context: {
+    namePrefix: "automate-emails-bedrock",
+    embedModelArn:
+      "arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v2:0",
+    queryModelArn:
+      "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-sonnet-20240229-v1:0",
+    recipientEmail: "",
+    route53HostedZone: "",
+  },
   deps: [
     "@aws-sdk/client-bedrock-agent@3.600.0",
     "@aws-sdk/client-opensearchserverless@3.600.0",

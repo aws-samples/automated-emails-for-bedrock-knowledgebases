@@ -15,22 +15,20 @@ It consists of a single Stack: AutomateEmailsBedrockStack which deploys two cust
    3. Amazon Titan Embed Text v2
    4. Anthropic Claude 3 Sonnet
 
-# Required Parameters
-These environment variables are required before deployment
+# Context Values
+This app is configurable via a set of values defined in the [CDK Context](https://docs.aws.amazon.com/cdk/v2/guide/context.html).  Many of these values have defaults but may be overriden via the --context flag when synthing or deploying
 
-| Env Var             | Description                                                                               | 
-|---------------------|-------------------------------------------------------------------------------------------|
-| RECIPIENT_EMAIL     | The email address to receive queries on                                                   | 
+```shell
+npx cdk deploy --context recipientEmail=foo@bar.com
+```
 
-# Optional Parameters
-This app is pre-configured with defaults, however you can override these with environment variables.
-
-| Env Var             | Description                                                                               | Default                                                                            |
-|---------------------|-------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
-| NAME_PREFIX         | A string character prefix to give uniqueness to the generated resources                   | "automate-emails-bedrock"                                                           |
-| EMBED_MODEL_ARN     | The ARN of the Bedrock embeddings model                                                   | arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v2:0            |
-| QUERY_MODEL_ARN     | The ARN of the Bedrock querying model                                                     | arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-sonnet-20240229-v1:0 |
-| ROUTE53_HOSTED_ZONE | If using a Route53 Public Hosted Zone include the name here for auto-configuration of SES | N/A                                                                                 |
+| Context Value     | Description                                                                               | Default                                                                             |
+|-------------------|-------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------
+| recipientEmail    | The email address to receive queries on                                                   | <NONE>                                                                              |
+| namePrefix        | A string character prefix to give uniqueness to the generated resources                   | "automate-emails-bedrock"                                                           |
+| embedModelArn     | The ARN of the Bedrock embeddings model                                                   | arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v2:0            |
+| queryModelArn     | The ARN of the Bedrock querying model                                                     | arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-sonnet-20240229-v1:0 |
+| route53HostedZone | If using a Route53 Public Hosted Zone include the name here for auto-configuration of SES | N/A                                                                                 |
 
 
 # Deployment Steps
