@@ -1,0 +1,12 @@
+KNOWLEDGE_BASE_ID
+SAKSURZDE8
+MODEL_ARN
+arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-sonnet-20240229-v1:0
+DATA_SOURCE_ID
+8YDVC41W60
+DDB_TABLE
+mydemozone-emails-status
+EMAIL_SOURCE
+info@mydemozone.com
+EMAIL_REVIEW_DEST
+weberdl@amazon.com
