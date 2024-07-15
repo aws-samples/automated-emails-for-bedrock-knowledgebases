@@ -259,9 +259,9 @@ export class KnowledgeBaseEmailQuery extends Construct {
     const stepFunctionChain = writeToDynamoSFTask
       .next(queryKBSFTask)
       .next(
-        new Choice(this, "ConfidenceChoice")
+        new Choice(this, "ResponseGenerated")
           .when(
-            Condition.numberGreaterThanEquals("$.Payload.confidence", 0.7),
+            Condition.booleanEquals("$.Payload.response_generated", true),
             sendEmailToCustomerSFTask,
           )
           .otherwise(sendEmailToSupportSFTask),
