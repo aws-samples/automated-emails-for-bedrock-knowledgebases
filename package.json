@@ -54,7 +54,7 @@
     "aws-lambda": "^1.0.7",
     "constructs": "^10.0.5"
   },
-  "license": "Apache-2.0",
+  "license": "MIT",
   "publishConfig": {
     "access": "public"
   },

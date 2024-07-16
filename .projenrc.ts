@@ -13,6 +13,8 @@ const project = new awscdk.AwsCdkTypeScriptApp({
       trailingComma: TrailingComma.ALL,
     },
   },
+  license: "MIT",
+  copyrightOwner: "Amazon.com",
   gitignore: [".idea/", "cdk.context.json"],
   context: {
     namePrefix: "automate-emails-bedrock",
