@@ -10,12 +10,13 @@ export class AutomateEmailsBedrockStack extends Stack {
     const namePrefix = this.node.tryGetContext("namePrefix");
     const embedModelArn = this.node.tryGetContext("embedModelArn");
     const queryModelArn = this.node.tryGetContext("queryModelArn");
-    const recipientEmail = this.node.tryGetContext("recipientEmail");
+    const emailSource = this.node.tryGetContext("emailSource");
+    const emailReviewDest = this.node.tryGetContext("emailReviewDest");
     const route53HostedZone = this.node.tryGetContext("route53HostedZone");
 
-    if (!recipientEmail) {
+    if (!emailSource) {
       console.error(
-        "No recipient email address defined.  Cannot build CDK stack.  Provide value with --context (cdk deploy --context recipientEmail=foo.bar@baz.com)",
+        "You must define both emailSource and emailReviewDest at deploy time. Cannot build CDK stack.  Provide values with --context (cdk deploy --context emailSource=foo.bar@baz.com --context emailReviewDest=foo.bar@baz.com)",
       );
       process.exit(1);
     }
@@ -33,7 +34,8 @@ export class AutomateEmailsBedrockStack extends Stack {
       namePrefix: namePrefix,
       knowledgeBaseId: knowledgeBase.knowledgeBaseId,
       queryModelArn: queryModelArn,
-      recipientEmail: recipientEmail,
+      emailSource: emailSource,
+      emailReviewDest: emailReviewDest,
       route53HostedZone: route53HostedZone,
     });
   }

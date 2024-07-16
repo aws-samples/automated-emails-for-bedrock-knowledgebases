@@ -20,7 +20,8 @@ const project = new awscdk.AwsCdkTypeScriptApp({
       "arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v2:0",
     queryModelArn:
       "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-sonnet-20240229-v1:0",
-    recipientEmail: "",
+    emailSource: "",
+    emailReviewDest: "",
     route53HostedZone: "",
   },
   deps: [

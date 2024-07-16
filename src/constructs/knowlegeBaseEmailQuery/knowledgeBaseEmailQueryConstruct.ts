@@ -32,7 +32,8 @@ export interface IKnowledgeBaseEmailQueryProps {
   namePrefix: string;
   knowledgeBaseId: string;
   queryModelArn: string;
-  recipientEmail: string;
+  emailSource: string;
+  emailReviewDest: string;
   route53HostedZone?: string;
 }
 
@@ -81,7 +82,7 @@ export class KnowledgeBaseEmailQuery extends Construct {
       });
     } else {
       new EmailIdentity(this, "SESEmailIdentity", {
-        identity: Identity.email(props.recipientEmail),
+        identity: Identity.email(props.emailSource),
       });
     }
 
@@ -89,7 +90,7 @@ export class KnowledgeBaseEmailQuery extends Construct {
     const sesRuleSet = new ReceiptRuleSet(this, "SESRuleSet", {
       rules: [
         {
-          recipients: [props.recipientEmail],
+          recipients: [props.emailSource],
           actions: [
             new S3({
               bucket,
@@ -222,8 +223,28 @@ export class KnowledgeBaseEmailQuery extends Construct {
         code: Code.fromAsset(path.join(__dirname, "functions")),
         environment: {
           DDB_TABLE: questionDynamoTable.tableName,
+          EMAIL_SOURCE: props.emailSource,
         },
       },
+    );
+
+    sendEmailToCustomerLambda.role?.addToPrincipalPolicy(
+      new PolicyStatement({
+        sid: "canSendEmail",
+        effect: Effect.ALLOW,
+        actions: ["ses:SendEmail"],
+        resources: ["*"],
+      }),
+    );
+
+    // Permission to update DynamoDB item
+    sendEmailToCustomerLambda.role?.addToPrincipalPolicy(
+      new PolicyStatement({
+        sid: "canUpdateDynamoDBItem",
+        effect: Effect.ALLOW,
+        actions: ["dynamodb:UpdateItem"],
+        resources: [questionDynamoTable.tableArn],
+      }),
     );
 
     const sendEmailToCustomerSFTask = new LambdaInvoke(
@@ -244,6 +265,8 @@ export class KnowledgeBaseEmailQuery extends Construct {
         code: Code.fromAsset(path.join(__dirname, "functions")),
         environment: {
           DDB_TABLE: questionDynamoTable.tableName,
+          EMAIL_SOURCE: props.emailSource,
+          EMAIL_REVIEW_DEST: props.emailReviewDest,
         },
       },
     );
