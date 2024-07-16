@@ -118,12 +118,19 @@ export class BedrockKnowledgeBase extends Construct {
       },
     });
 
-    const sourceBucket = new Bucket(this, "KnowledgeBaseSourceBucket");
+    const sourceBucket = new Bucket(this, "KnowledgeBaseSourceBucket", {
+      enforceSSL: true,
+    });
     sourceBucket.grantReadWrite(this.knowledgeBaseRole);
 
-    new CfnOutput(this, "KnowledgeBaseSourceBucketOutput", {
+    new CfnOutput(this, "KnowledgeBaseSourceBucketArn", {
       key: "KnowledgeBaseSourceBucketArn",
       value: sourceBucket.bucketArn,
+    });
+
+    new CfnOutput(this, "KnowledgeBaseSourceBucketName", {
+      key: "KnowledgeBaseSourceBucketName",
+      value: sourceBucket.bucketName,
     });
 
     // Lambda Function to create Custom Resource
