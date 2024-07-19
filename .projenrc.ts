@@ -1,11 +1,12 @@
 import { awscdk } from "projen";
-import { TrailingComma } from "projen/lib/javascript";
+import { NodePackageManager, TrailingComma } from "projen/lib/javascript";
 
 const project = new awscdk.AwsCdkTypeScriptApp({
   cdkVersion: "2.1.0",
   defaultReleaseBranch: "main",
   name: "automate-emails-bedrock",
   projenrcTs: true,
+  packageManager: NodePackageManager.NPM,
   prettier: true,
   prettierOptions: {
     settings: {
