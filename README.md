@@ -12,12 +12,11 @@ It consists of a single Stack: AutomateEmailsBedrockStack which deploys two cust
 
 # Pre-reqs
 
-1. NodeJS and NPM
-2. Environment has been bootstrapped
-
-   `npx cdk bootstrap aws://{{AWS_ACCOUNT_NUMBER}}/{{AWS_REGION}}`
+1. [NodeJS and NPM](https://nodejs.org/en/download/package-manager)
+2. Environment has
+   been [bootstrapped](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html) `npx cdk bootstrap aws://{{AWS_ACCOUNT_NUMBER}}/{{AWS_REGION}}`
 3. You own a valid domain name and have configuration rights over it. NOTE: If you have a domain name registered in
-   Route53 and managed in this same account this app will configure SES for you. If your domain is managed elsewhere
+   Route53 and managed in this same account, this cdk will configure SES for you. If your domain is managed elsewhere
    then some manual steps will be necessary (see Deployment Steps below).
 4. You have enabled the Bedrock models used for embedding and querying must.
    See [documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access.html#model-access-add) for more
@@ -31,18 +30,14 @@ This app is configurable via a set of values defined in
 the [CDK Context](https://docs.aws.amazon.com/cdk/v2/guide/context.html). Many of these values have defaults but may be
 overridden via the --context flag when synth-ing or deploying
 
-```shell
-npx cdk deploy --context key=value
-```
-
 | Context Value     | Description                                                                                               | Default                                                                             |
 |-------------------|-----------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
-| emailSource       | The email address to receive queries on                                                                   | <NONE>                                                                              |
-| emailReviewDest   | The email address to which any messages that fail to generate a response from the knowledge base get sent | <NONE>                                                                              |
+| emailSource       | The email address to receive queries on                                                                   | NONE                                                                                |
+| emailReviewDest   | The email address to which any messages that fail to generate a response from the knowledge base get sent | NONE                                                                                |
 | namePrefix        | A string character prefix to give uniqueness to the generated resources                                   | "automate-emails-bedrock"                                                           |
 | embedModelArn     | The ARN of the Bedrock embeddings model                                                                   | arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v2:0            |
 | queryModelArn     | The ARN of the Bedrock querying model                                                                     | arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-sonnet-20240229-v1:0 |
-| route53HostedZone | If using a Route53 Public Hosted Zone include the name here for auto-configuration of SES                 | N/A                                                                                 |
+| route53HostedZone | If using a Route53 Public Hosted Zone include the name here for auto-configuration of SES                 | NONE                                                                                |
 
 # Deployment Steps
 
@@ -50,14 +45,16 @@ npx cdk deploy --context key=value
     1. If you want to receive email on address for a domain managed in Route53, this will be autowired for you if you
        provide the ROUTE53_HOSTED_ZONE environment variable
     2. If you managed your domain elsewhere you need to confirm your email identity in SES
-2. Deploy App
+2. Clone repository and navigate to root directory
+3. Install Dependencies `npx projen install`
+4. Deploy App
     ```sh
     npx cdk deploy --context emailSource=help@mybedrockknowledgebaseapp.com --context emailReviewDest=support@mybedrockknowledgebaseapp.com --context route53HostedZone mybedrockkonwledgebaseapp.com
     ```
-3. Upload Documents to S3
+5. Upload Documents to S3
     1. Find the Name of the KnowledgeBaseSourceBucket from the CloudFormation outputs
-    2. Sync knowledge base contents to S3 bucket using `aws s3 sync . s3://{}`
-4. Enable recipient emails in SES - By default your SES account will be in a "sandbox" state. This means that it can
+    2. Sync knowledge base contents to S3 bucket using `aws s3 sync . s3://{BUCKET_NAME}`
+6. Enable recipient emails in SES - By default your SES account will be in a "sandbox" state. This means that it can
    only deliver emails to known and verified recipients. To continue with testing you must either manually add a test
    user email address (Amazon SES->Identities->Create Identity) or you
    must [Request Production Access](https://docs.aws.amazon.com/ses/latest/dg/request-production-access.html)
