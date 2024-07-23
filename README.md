@@ -46,7 +46,7 @@ overridden via the --context flag when synth-ing or deploying
        provide the ROUTE53_HOSTED_ZONE environment variable
     2. If you managed your domain elsewhere you need to confirm your email identity in SES
 2. Clone repository and navigate to root directory
-3. Install Dependencies `npx projen install`
+3. Install Dependencies `npm install`
 4. Deploy App
     ```sh
     npx cdk deploy --context emailSource=help@mybedrockknowledgebaseapp.com --context emailReviewDest=support@mybedrockknowledgebaseapp.com --context route53HostedZone mybedrockkonwledgebaseapp.com
@@ -63,7 +63,3 @@ overridden via the --context flag when synth-ing or deploying
 
 * `npx cdk synth` Synthesize the CloudFormation template
 * `npx cdk deploy` Deploy all
-
-# Notes and Acknowledgements
-
-- This app was written with [projen](https://projen.io/) to automate configuration best practices
