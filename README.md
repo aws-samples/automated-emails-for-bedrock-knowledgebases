@@ -12,13 +12,12 @@ It consists of a single Stack: AutomateEmailsBedrockStack which deploys two cust
 
 # Pre-reqs
 
-1. [NodeJS and NPM](https://nodejs.org/en/download/package-manager)
-2. Environment has
-   been [bootstrapped](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html) `npx cdk bootstrap aws://{{AWS_ACCOUNT_NUMBER}}/{{AWS_REGION}}`
-3. You own a valid domain name and have configuration rights over it. NOTE: If you have a domain name registered in
+1. You have followed the [getting started steps](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html) for AWS
+   CDK to configure your local environment to deploy the CDK stack
+2. You own a valid domain name and have configuration rights over it. NOTE: If you have a domain name registered in
    Route53 and managed in this same account, this cdk will configure SES for you. If your domain is managed elsewhere
    then some manual steps will be necessary (see Deployment Steps below).
-4. You have enabled the Bedrock models used for embedding and querying must.
+3. You have enabled the Bedrock models used for embedding and querying must.
    See [documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access.html#model-access-add) for more
    info. If you are using the default models, these are the ones to enable:
     1. Amazon Titan Embed Text v2
@@ -49,7 +48,7 @@ overridden via the --context flag when synth-ing or deploying
 3. Install Dependencies `npm install`
 4. Deploy App
     ```sh
-    npx cdk deploy --context emailSource=help@mybedrockknowledgebaseapp.com --context emailReviewDest=support@mybedrockknowledgebaseapp.com --context route53HostedZone mybedrockkonwledgebaseapp.com
+    cdk deploy --context emailSource=help@mybedrockknowledgebaseapp.com --context emailReviewDest=support@mybedrockknowledgebaseapp.com --context route53HostedZone mybedrockkonwledgebaseapp.com
     ```
 5. Upload Documents to S3
     1. Find the Name of the KnowledgeBaseSourceBucket from the CloudFormation outputs
@@ -61,5 +60,5 @@ overridden via the --context flag when synth-ing or deploying
 
 # Useful Commands
 
-* `npx cdk synth` Synthesize the CloudFormation template
-* `npx cdk deploy` Deploy all
+* `cdk synth` Synthesize the CloudFormation template
+* `cdk deploy` Deploy all
