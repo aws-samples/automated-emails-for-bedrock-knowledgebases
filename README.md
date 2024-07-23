@@ -20,7 +20,7 @@ It consists of a single Stack: AutomateEmailsBedrockStack which deploys two cust
 3. You have enabled the Bedrock models used for embedding and querying must.
    See [documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access.html#model-access-add) for more
    info. If you are using the default models, these are the ones to enable:
-    1. Amazon Titan Embed Text v2
+    1. Amazon Titan Text Embeddings V2
     2. Anthropic Claude 3 Sonnet
 
 # Context Values
