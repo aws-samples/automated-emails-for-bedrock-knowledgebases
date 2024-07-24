@@ -14,6 +14,58 @@ This app consists of a single Stack: AutomateEmailsBedrockStack which deploys tw
 * KnowledgeBaseEmailQuery
     * A Step Functions-powered email pipeline utilizing SES, Lambda, and the previously created Bedrock Knowledge Base
 
+### Architecture
+
+<image src="./architecture_diagram.png" width="1000"/>
+
+The solution architecture provides for two distinct functions: populating the knowledge base with domain documents to
+support RAG and automating the response to email inquiries.
+
+The architecture workflow for populating the Knowledge base includes the following steps (round numbered callouts on
+right-hand side of diagram):
+
+1. A user uploads documents which contain company and domain specific information, such as policy manuals, to an Amazon
+   Simple Storage Service (Amazon S3) bucket configured as the knowledge base data source.
+2. Amazon S3 invokes an AWS Lambda function to synchronize the data source with the knowledge base.
+3. The Lambda functions starts data ingestion by calling the StartIngestionJob API function.
+4. The knowledge base splits the documents in the data source into manageable chunks for efficient retrieval. The
+   knowledge base is set up to use Amazon OpenSearch Serverless as its vector store and an Amazon Titan embedding text
+   model to create the embeddings. In this step, Knowledge Bases for Amazon Bedrock converts the chunks to embeddings
+   and writes to a vector index in the OpenSearch vector store, while maintaining a mapping to the original document.
+   For more information about vector stores, see Set up a vector index for your knowledge base in a supported vector
+   store. For more information about supported embedding models, see Supported regions and models for Knowledge bases
+   for Amazon Bedrock.
+
+The architecture workflow for automating email responses using generative AI with the knowledge base includes the
+following steps (square numbered steps starting on left side of diagram):
+
+1. A customer sends a natural language email inquiry to an address configured within the company’s domain, such as
+   info@example.com.
+2. Amazon Simple Email Service receives the email and stores the entire email content to an Amazon S3 bucket with the
+   unique email identifier as the object key.
+3. An Amazon EventBridge rule is triggered upon receipt of the email in the Amazon S3 bucket and starts an AWS Step
+   Function to coordinate the generation and send of the email response.
+4. A Lambda function retrieves the email content from Amazon S3 to pass onto the next Lambda function.
+5. The email identifier and a received timestamp is recorded in an Amazon DynamoDB table. The DynamoDB table can be used
+   to track and analyze the generated email responses.
+6. A Lambda function extracts the body of the email inquiry and constructs a prompt query based on the email body, then
+   invokes the RetrieveAndGenerate API function of Amazon Bedrock to generate a response.
+7. Knowledge Bases for Amazon Bedrock uses the Amazon Titan embedding model, converts the prompt query to a vector, and
+   finds chunks that are semantically similar. The prompt is then augmented with the chunks that are retrieved from the
+   knowledge base. The prompt alongside the additional context is then sent to an LLM for response generation. In this
+   solution, we use Anthropic Claude Sonnet 3.0 as our LLM to generate user responses using additional context. Claude
+   Sonnet 3.0 is a fast, affordable, and very capable model that can handle a range of tasks, including casual dialogue,
+   text analysis, summarization, and document question-answering.
+8. A Lambda function constructs an email reply from the generated response and transmits the email reply via Amazon
+   Simple Email Service to the customer. Email tracking and disposition information is updated in the Amazon DynamoDB
+   table.
+
+OR
+
+1. When an email response is not generated automatically, a Lambda function forwards the original email to an internal
+   support team for review and response to customer. Email disposition information is updated in the Amazon DynamoDB
+   table.
+
 # Pre-reqs
 
 1. You have a local machine or VM on which you can install and run AWS CLI tools
