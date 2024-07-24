@@ -98,20 +98,10 @@ overridden via the --context flag when synth-ing or deploying
 
 # Deployment Steps
 
-1. Configure Email to allow SES to receive messages
-    1. If you want to receive email on address for a domain managed in Route53, this will be autowired for you if you
-       provide the ROUTE53_HOSTED_ZONE environment variable
-    2. If you manage your domain in a different account or in a registrar besides Route53 you need to follow
-       the [instructions](https://docs.aws.amazon.com/ses/latest/dg/creating-identities.html#verify-domain-procedure)
-       for manually creating a domain identity:
-       a. Create a Domain Identity in SES (Amazon SES->Identities->Create Identity)
-       b. Add DKIM records to your DNS provider - locate the generated CName records in the DKIM section and enter
-       those into your DNS provider
-       c. Add DMARC record to your DNS provider - locate the generatedTXT record in the DMARC section and enter into
-       your DNS provider
-       d. Wait for your DNS identity to be verified. You will receive an email that DKIM is setup
-       e. Add MX record for SES to be able to receive email for your domain (ex. inbound-smtp.{region}.amazonaws.com)
-       f. OPTIONAL - Request production access.
+1. Configure an SES domain Identity to allow SES to send and receive messages. If you want to receive email on address
+   for a domain managed in Route53, this will be autowired for you if you
+   provide the ROUTE53_HOSTED_ZONE context variable. If you manage your domain in a different account or in a registrar
+   besides Route53, see section: Manually Verify Domain Identity (Optional)
 2. Clone repository and navigate to root
    directory ```git clone https://github.com/aws-samples/automated-emails-for-bedrock-knowledgebases.git && cd automated-emails-for-bedrock-knowledgebases```
 3. Install Dependencies `npm install`
@@ -123,10 +113,25 @@ overridden via the --context flag when synth-ing or deploying
     #example 
     cdk deploy --context emailSource=help@mybedrockknowledgebaseapp.com --context emailReviewDest=support@mybedrockknowledgebaseapp.com --context route53HostedZone mybedrockkonwledgebaseapp.com
     ```
-5. OPTIONAL - Request SES Production Access. At this point you will have [Amazon Simple Email]() configured with a
+5. OPTIONAL - Request SES Production Access. At this point you will
+   have [Amazon Simple Email](https://aws.amazon.com/ses/) configured with a
    verified domain identity in sandbox mode. You can now send email to any address in that domain. If you need to send
    emails to users with a different domain name you need
    to [request production access](https://docs.aws.amazon.com/ses/latest/dg/request-production-access.html)
+
+# Manually Verify Domain Identity (Optional)
+
+If your domain is not managed in Route53 or not managed in the account in which this CDK is being deploy, follow the
+steps detailed [here](https://docs.aws.amazon.com/ses/latest/dg/creating-identities.html#verify-domain-procedure) to
+manually verify your domain:
+
+1. Create a Domain Identity in SES (Amazon SES->Identities->Create Identity)
+2. Add DKIM records to your DNS provider - locate the generated CName records in the DKIM section and enter
+   those into your DNS provider
+3. Add DMARC record to your DNS provider - locate the generatedTXT record in the DMARC section and enter into
+   your DNS provider
+4. Wait for your DNS identity to be verified. You will receive an email that DKIM is setup
+5. Add MX record for SES to be able to receive email for your domain (ex. inbound-smtp.{region}.amazonaws.com)
 
 # Upload Source Files to S3
 
@@ -157,7 +162,8 @@ Send an email to the address defined in the "sourceEmail" context param. If you 
 referenced above here are some examples:
 
 > How many days of PTO do I get?
->
+
+> To whom do I report an HR violation?
 
 # Useful Commands
 
