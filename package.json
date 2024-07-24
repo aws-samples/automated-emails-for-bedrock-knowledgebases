@@ -6,6 +6,7 @@
     "diff": "npx cdk diff"
   },
   "devDependencies": {
+    "@aws-sdk/types": "^3.609.0",
     "@types/aws-lambda": "^8.10.140",
     "@types/jest": "^29.5.12",
     "@types/node": "^18",
@@ -26,9 +27,9 @@
     "typescript": "^5.5.3"
   },
   "dependencies": {
-    "@aws-sdk/client-bedrock-agent": "3.600.0",
-    "@aws-sdk/client-opensearchserverless": "3.600.0",
-    "@aws-sdk/client-ssm": "3.600.0",
+    "@aws-sdk/client-bedrock-agent": "^3.616.0",
+    "@aws-sdk/client-opensearchserverless": "^3.616.0",
+    "@aws-sdk/client-ssm": "^3.616.0",
     "@aws-sdk/credential-provider-node": "^3.609.0",
     "@opensearch-project/opensearch": "^2.10.0",
     "aws-cdk-lib": "^2.1.0",

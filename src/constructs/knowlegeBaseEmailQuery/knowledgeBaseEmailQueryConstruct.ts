@@ -45,7 +45,10 @@ export class KnowledgeBaseEmailQuery extends Construct {
   ) {
     super(scope, id);
 
-    const bucket = new Bucket(this, "EmailContentsBucket");
+    const bucket = new Bucket(this, "EmailContentsBucket", {
+      bucketName: `${Stack.of(this).stackName}-emailcontents-${Stack.of(this).account}`,
+      enforceSSL: true,
+    });
 
     bucket.addToResourcePolicy(
       new PolicyStatement({
@@ -149,6 +152,7 @@ export class KnowledgeBaseEmailQuery extends Construct {
         DDB_TABLE: questionDynamoTable.tableName,
       },
       timeout: Duration.seconds(30),
+      description: "Lambda to write email to DynamoDB",
     });
 
     writeToDynamoLambda.role?.addToPrincipalPolicy(
@@ -187,6 +191,7 @@ export class KnowledgeBaseEmailQuery extends Construct {
         MODEL_ARN: props.queryModelArn,
       },
       timeout: Duration.seconds(30),
+      description: "Lambda to query the Bedrock Knowledgebase",
     });
 
     queryKBLambda.role?.addToPrincipalPolicy(
@@ -218,13 +223,14 @@ export class KnowledgeBaseEmailQuery extends Construct {
       "SendEmailToCustomerFunction",
       {
         functionName: `${Stack.of(this).stackName}-sendEmailToCX`,
-        runtime: Runtime.PYTHON_3_11,
+        runtime: Runtime.PYTHON_3_12,
         handler: "sendEmailToCustomer.handler",
         code: Code.fromAsset(path.join(__dirname, "functions")),
         environment: {
           DDB_TABLE: questionDynamoTable.tableName,
           EMAIL_SOURCE: props.emailSource,
         },
+        description: "Lambda to send response email to original requester",
       },
     );
 
@@ -268,6 +274,8 @@ export class KnowledgeBaseEmailQuery extends Construct {
           EMAIL_SOURCE: props.emailSource,
           EMAIL_REVIEW_DEST: props.emailReviewDest,
         },
+        description:
+          "Lambda to send email to support for review if response was not generated",
       },
     );
 
