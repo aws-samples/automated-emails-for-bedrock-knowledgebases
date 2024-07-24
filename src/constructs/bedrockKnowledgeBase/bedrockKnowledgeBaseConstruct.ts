@@ -1,4 +1,11 @@
-import { CfnOutput, CustomResource, Duration, Names, Stack } from "aws-cdk-lib";
+import {
+  CfnOutput,
+  CustomResource,
+  Duration,
+  Names,
+  RemovalPolicy,
+  Stack,
+} from "aws-cdk-lib";
 import {
   ArnPrincipal,
   CompositePrincipal,
@@ -122,6 +129,8 @@ export class BedrockKnowledgeBase extends Construct {
     const sourceBucket = new Bucket(this, "KnowledgeBaseSourceBucket", {
       bucketName: `${Names.uniqueResourceName(this, { maxLength: 40 }).toLowerCase()}-knowledgebase-source`,
       enforceSSL: true,
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
     });
     sourceBucket.grantReadWrite(this.knowledgeBaseRole);
 

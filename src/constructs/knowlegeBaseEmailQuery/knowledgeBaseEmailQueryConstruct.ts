@@ -1,6 +1,6 @@
 import { Construct } from "constructs";
 import { Bucket } from "aws-cdk-lib/aws-s3";
-import { Code, Function, Runtime } from "aws-cdk-lib/aws-lambda";
+import { Architecture, Code, Function, Runtime } from "aws-cdk-lib/aws-lambda";
 import path from "node:path";
 import { LambdaInvoke } from "aws-cdk-lib/aws-stepfunctions-tasks";
 import {
@@ -10,23 +10,32 @@ import {
   LogLevel,
   StateMachine,
 } from "aws-cdk-lib/aws-stepfunctions";
-import { CfnOutput, Duration, Names, RemovalPolicy, Stack } from "aws-cdk-lib";
+import {
+  CfnOutput,
+  CustomResource,
+  Duration,
+  Names,
+  RemovalPolicy,
+  Stack,
+} from "aws-cdk-lib";
 
 import { Rule } from "aws-cdk-lib/aws-events";
 import { SfnStateMachine } from "aws-cdk-lib/aws-events-targets";
 import { EmailIdentity, Identity, ReceiptRuleSet } from "aws-cdk-lib/aws-ses";
 import { S3 } from "aws-cdk-lib/aws-ses-actions";
-import {
-  AwsCustomResource,
-  AwsCustomResourcePolicy,
-  AwsSdkCall,
-  PhysicalResourceId,
-} from "aws-cdk-lib/custom-resources";
+import { Provider } from "aws-cdk-lib/custom-resources";
 import { LogGroup, RetentionDays } from "aws-cdk-lib/aws-logs";
-import { Effect, PolicyStatement, ServicePrincipal } from "aws-cdk-lib/aws-iam";
+import {
+  Effect,
+  PolicyDocument,
+  PolicyStatement,
+  Role,
+  ServicePrincipal,
+} from "aws-cdk-lib/aws-iam";
 import { HostedZone, MxRecord } from "aws-cdk-lib/aws-route53";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { AttributeType, TableV2 } from "aws-cdk-lib/aws-dynamodb";
+import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 
 export interface IKnowledgeBaseEmailQueryProps {
   namePrefix: string;
@@ -48,6 +57,8 @@ export class KnowledgeBaseEmailQuery extends Construct {
     const bucket = new Bucket(this, "EmailContentsBucket", {
       bucketName: `${Names.uniqueResourceName(this, { maxLength: 40 }).toLowerCase()}-emailcontents`,
       enforceSSL: true,
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
     });
 
     bucket.addToResourcePolicy(
@@ -103,27 +114,53 @@ export class KnowledgeBaseEmailQuery extends Construct {
     /*
      * Enable the Receipt Rule Set - NOTE: this is not supported with bare CloudFormation calls, so this is a custom resource to activate the rule set after creation
      */
-    const setActiveReceiptRuleSetSdkCall: AwsSdkCall = {
-      service: "SES",
-      action: "setActiveReceiptRuleSet",
-      physicalResourceId: PhysicalResourceId.of("SesCustomResource"),
-      parameters: {
+    const activateAndDeactivateRuleSetCustomResourceFunction =
+      new NodejsFunction(
+        this,
+        "activateAndDeactivateRuleSetCustomResourceLambda",
+        {
+          entry: path.join(
+            __dirname,
+            "functions",
+            "activateAndDeactivateRuleSet.ts",
+          ),
+          handler: "handler",
+          runtime: Runtime.NODEJS_LATEST,
+          architecture: Architecture.ARM_64,
+          timeout: Duration.seconds(30),
+          role: new Role(this, "activateAndDeactivateRuleSetLambdaRole", {
+            assumedBy: new ServicePrincipal("lambda.amazonaws.com"),
+            inlinePolicies: {
+              policy: new PolicyDocument({
+                statements: [
+                  new PolicyStatement({
+                    sid: "canInvokeSES",
+                    effect: Effect.ALLOW,
+                    actions: ["ses:SetActiveReceiptRuleSet"],
+                    resources: ["*"],
+                  }),
+                ],
+              }),
+            },
+          }),
+          functionName: `${Names.uniqueResourceName(this, { maxLength: 25 }).toLowerCase()}-activateAndDeactivateRuleSetLambda`,
+        },
+      );
+
+    const customResourceProvider = new Provider(
+      this,
+      "receiptRuleSetCustomResourceProvider",
+      {
+        onEventHandler: activateAndDeactivateRuleSetCustomResourceFunction,
+        logRetention: RetentionDays.ONE_WEEK,
+      },
+    );
+
+    new CustomResource(this, "activateAndDeactivateRuleSetCustomResource", {
+      serviceToken: customResourceProvider.serviceToken,
+      properties: {
         RuleSetName: sesRuleSet.receiptRuleSetName,
       },
-    };
-
-    new AwsCustomResource(this, "SetActiveReceiptRuleSetCustomResource", {
-      onCreate: setActiveReceiptRuleSetSdkCall,
-      onUpdate: setActiveReceiptRuleSetSdkCall,
-      logRetention: RetentionDays.ONE_WEEK,
-      policy: AwsCustomResourcePolicy.fromStatements([
-        new PolicyStatement({
-          sid: "CanActivateSESRuleSet",
-          effect: Effect.ALLOW,
-          actions: ["ses:SetActiveReceiptRuleSet"],
-          resources: ["*"],
-        }),
-      ]),
     });
 
     // DynamoDB Table for storage of questions and status
