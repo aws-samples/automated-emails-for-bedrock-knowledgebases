@@ -101,14 +101,32 @@ overridden via the --context flag when synth-ing or deploying
 1. Configure Email to allow SES to receive messages
     1. If you want to receive email on address for a domain managed in Route53, this will be autowired for you if you
        provide the ROUTE53_HOSTED_ZONE environment variable
-    2. If you managed your domain elsewhere you need to confirm your email identity in SES
+    2. If you manage your domain in a different account or in a registrar besides Route53 you need to follow
+       the [instructions](https://docs.aws.amazon.com/ses/latest/dg/creating-identities.html#verify-domain-procedure)
+       for manually creating a domain identity:
+       a. Create a Domain Identity in SES (Amazon SES->Identities->Create Identity)
+       b. Add DKIM records to your DNS provider - locate the generated CName records in the DKIM section and enter
+       those into your DNS provider
+       c. Add DMARC record to your DNS provider - locate the generatedTXT record in the DMARC section and enter into
+       your DNS provider
+       d. Wait for your DNS identity to be verified. You will receive an email that DKIM is setup
+       e. Add MX record for SES to be able to receive email for your domain (ex. inbound-smtp.{region}.amazonaws.com)
+       f. OPTIONAL - Request production access.
 2. Clone repository and navigate to root
    directory ```git clone https://github.com/aws-samples/automated-emails-for-bedrock-knowledgebases.git && cd automated-emails-for-bedrock-knowledgebases```
 3. Install Dependencies `npm install`
 4. Deploy App
     ```sh
+    cdk deploy --context emailSource={EMAIL_SOURCE} --context emailReviewDest={EMAIL_REVIEW_DEST} --context route53HostedZone {HOSTED_ZONE_NAME}
+    ```
+    ```sh
+    #example 
     cdk deploy --context emailSource=help@mybedrockknowledgebaseapp.com --context emailReviewDest=support@mybedrockknowledgebaseapp.com --context route53HostedZone mybedrockkonwledgebaseapp.com
     ```
+5. OPTIONAL - Request SES Production Access. At this point you will have [Amazon Simple Email]() configured with a
+   verified domain identity in sandbox mode. You can now send email to any address in that domain. If you need to send
+   emails to users with a different domain name you need
+   to [request production access](https://docs.aws.amazon.com/ses/latest/dg/request-production-access.html)
 
 # Upload Source Files to S3
 
