@@ -4,6 +4,7 @@ import {
   CreateDataSourceCommand,
   CreateKnowledgeBaseCommand,
   CreateKnowledgeBaseCommandOutput,
+  DataDeletionPolicy,
   DeleteKnowledgeBaseCommand,
   StartIngestionJobCommand,
 } from "@aws-sdk/client-bedrock-agent";
@@ -109,9 +110,9 @@ export const createDataSource = async (params: CreateDataSourceProps) => {
           type: "S3",
           s3Configuration: {
             bucketArn: knowledgeBaseBucketArn,
-            // inclusionPrefixes: ["knowledgeBase"],
           },
         },
+        dataDeletionPolicy: DataDeletionPolicy.RETAIN,
       }),
     );
     if (
@@ -177,7 +178,11 @@ export const updateKnowledgeBase = async (
     const dataSourceId = await retrieveParameter(
       `/${namePrefix}-${nameSuffix}/dataSourceId`,
     );
-    return { knowledgeBaseId, knowledgeBaseArn, dataSourceId };
+    return {
+      knowledgeBaseId,
+      knowledgeBaseArn,
+      dataSourceId,
+    };
   } catch (error) {
     console.error("Error updating knowledge bases:", error);
     throw error;

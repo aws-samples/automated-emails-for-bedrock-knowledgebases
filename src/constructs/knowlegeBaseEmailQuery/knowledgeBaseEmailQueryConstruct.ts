@@ -10,7 +10,7 @@ import {
   LogLevel,
   StateMachine,
 } from "aws-cdk-lib/aws-stepfunctions";
-import { CfnOutput, Duration, Stack } from "aws-cdk-lib";
+import { CfnOutput, Duration, Names, RemovalPolicy, Stack } from "aws-cdk-lib";
 
 import { Rule } from "aws-cdk-lib/aws-events";
 import { SfnStateMachine } from "aws-cdk-lib/aws-events-targets";
@@ -46,7 +46,7 @@ export class KnowledgeBaseEmailQuery extends Construct {
     super(scope, id);
 
     const bucket = new Bucket(this, "EmailContentsBucket", {
-      bucketName: `${Stack.of(this).stackName}-emailcontents-${Stack.of(this).account}`,
+      bucketName: `${Names.uniqueResourceName(this, { maxLength: 40 }).toLowerCase()}-emailcontents`,
       enforceSSL: true,
     });
 
@@ -82,10 +82,6 @@ export class KnowledgeBaseEmailQuery extends Construct {
 
       new EmailIdentity(this, "SESEmailIdentity", {
         identity: Identity.publicHostedZone(hostedZone),
-      });
-    } else {
-      new EmailIdentity(this, "SESEmailIdentity", {
-        identity: Identity.email(props.emailSource),
       });
     }
 
@@ -136,6 +132,7 @@ export class KnowledgeBaseEmailQuery extends Construct {
         name: "email_id",
         type: AttributeType.STRING,
       },
+      removalPolicy: RemovalPolicy.DESTROY,
     });
 
     new StringParameter(this, "DynamoTableParam", {
@@ -144,7 +141,7 @@ export class KnowledgeBaseEmailQuery extends Construct {
     });
 
     const writeToDynamoLambda = new Function(this, "WriteToDynamoFunction", {
-      functionName: `${Stack.of(this).stackName}-writeToDynamo`,
+      functionName: `${Names.uniqueResourceName(this, { maxLength: 40 }).toLowerCase()}-writeToDynamo`,
       runtime: Runtime.PYTHON_3_12,
       handler: "writeToDynamo.handler",
       code: Code.fromAsset(path.join(__dirname, "functions")),
@@ -182,7 +179,7 @@ export class KnowledgeBaseEmailQuery extends Construct {
     );
 
     const queryKBLambda = new Function(this, "QueryKBFunction", {
-      functionName: `${Stack.of(this).stackName}-queryKB`,
+      functionName: `${Names.uniqueResourceName(this, { maxLength: 40 }).toLowerCase()}-queryKB`,
       runtime: Runtime.PYTHON_3_12,
       handler: "queryKB.handler",
       code: Code.fromAsset(path.join(__dirname, "functions")),
@@ -222,7 +219,7 @@ export class KnowledgeBaseEmailQuery extends Construct {
       this,
       "SendEmailToCustomerFunction",
       {
-        functionName: `${Stack.of(this).stackName}-sendEmailToCX`,
+        functionName: `${Names.uniqueResourceName(this, { maxLength: 40 }).toLowerCase()}-sendEmailToCX`,
         runtime: Runtime.PYTHON_3_12,
         handler: "sendEmailToCustomer.handler",
         code: Code.fromAsset(path.join(__dirname, "functions")),
@@ -230,6 +227,7 @@ export class KnowledgeBaseEmailQuery extends Construct {
           DDB_TABLE: questionDynamoTable.tableName,
           EMAIL_SOURCE: props.emailSource,
         },
+        timeout: Duration.seconds(30),
         description: "Lambda to send response email to original requester",
       },
     );
@@ -265,7 +263,7 @@ export class KnowledgeBaseEmailQuery extends Construct {
       this,
       "SendEmailToSupportFunction",
       {
-        functionName: `${Stack.of(this).stackName}-sendEmailToSupport`,
+        functionName: `${Names.uniqueResourceName(this, { maxLength: 40 }).toLowerCase()}-sendEmailToSupport`,
         runtime: Runtime.PYTHON_3_12,
         handler: "sendEmailToSupport.handler",
         code: Code.fromAsset(path.join(__dirname, "functions")),
@@ -274,6 +272,7 @@ export class KnowledgeBaseEmailQuery extends Construct {
           EMAIL_SOURCE: props.emailSource,
           EMAIL_REVIEW_DEST: props.emailReviewDest,
         },
+        timeout: Duration.seconds(30),
         description:
           "Lambda to send email to support for review if response was not generated",
       },

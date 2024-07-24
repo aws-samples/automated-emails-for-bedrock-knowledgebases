@@ -120,7 +120,7 @@ export class BedrockKnowledgeBase extends Construct {
     });
 
     const sourceBucket = new Bucket(this, "KnowledgeBaseSourceBucket", {
-      bucketName: `${Stack.of(this).stackName}-knowledgebase-source-${Stack.of(this).account}`,
+      bucketName: `${Names.uniqueResourceName(this, { maxLength: 40 }).toLowerCase()}-knowledgebase-source`,
       enforceSSL: true,
     });
     sourceBucket.grantReadWrite(this.knowledgeBaseRole);
@@ -147,7 +147,7 @@ export class BedrockKnowledgeBase extends Construct {
         architecture: Architecture.ARM_64,
         timeout: Duration.minutes(15),
         role: customResourceRole,
-        functionName: `${Stack.of(this).stackName}-knowledgeBaseCRUDLambda`,
+        functionName: `${Names.uniqueResourceName(this, { maxLength: 40 }).toLowerCase()}-knowledgeBaseCRUDLambda`,
         description:
           "Lambda used to create the knowledgebase components (Opensearch Serverless Namespace, Bedrock Knowledgebase instance, etc.)",
       },
@@ -203,7 +203,7 @@ export class BedrockKnowledgeBase extends Construct {
 
     // Lambda to trigger a resync of data source
     const syncDataSourceLambda = new Function(this, "syncKnowledgeBaseLambda", {
-      functionName: `${Stack.of(this).stackName}-syncKnowledgeBaseLambda`,
+      functionName: `${Names.uniqueResourceName(this, { maxLength: 40 }).toLowerCase()}-syncKnowledgeBaseLambda`,
       runtime: Runtime.PYTHON_3_12,
       handler: "sync_knowledge_base.handler",
       code: Code.fromAsset(path.join(__dirname, "functions")),

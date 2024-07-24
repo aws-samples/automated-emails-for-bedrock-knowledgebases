@@ -16,13 +16,14 @@ This app consists of a single Stack: AutomateEmailsBedrockStack which deploys tw
 
 # Pre-reqs
 
-1. You have a local machine, VM, or Cloud9 instance with which you can install and run AWS CLI tools
+1. You have a local machine or VM on which you can install and run AWS CLI tools
 2. You have followed the [getting started steps](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html) for AWS
    CDK to prepare your local environment to deploy the CDK stack
-3. You own a valid domain name and have configuration rights over it. NOTE: If you have a domain name registered in
+3. You have bootstrapped your environment `cdk bootstrap aws://{ACCOUNT_NUMBER}/{REGION}`
+4. You own a valid domain name and have configuration rights over it. NOTE: If you have a domain name registered in
    Route53 and managed in this same account, this cdk will configure SES for you. If your domain is managed elsewhere
    then some manual steps will be necessary (see Deployment Steps below).
-4. You have enabled the Bedrock models used for embedding and querying.
+5. You have enabled the Bedrock models used for embedding and querying.
    See [documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access.html#model-access-add) for more
    info. In the default configuration, these are the ones to enable:
     1. Amazon Titan Text Embeddings V2
@@ -57,26 +58,36 @@ overridden via the --context flag when synth-ing or deploying
     cdk deploy --context emailSource=help@mybedrockknowledgebaseapp.com --context emailReviewDest=support@mybedrockknowledgebaseapp.com --context route53HostedZone mybedrockkonwledgebaseapp.com
     ```
 
-# Upload raw documents to S3
+# Upload Source Files to S3
 
-The CDK deployment process will have created an S3 bucket into which you can upload your raw files you want to serve as
-the basis for the Bedrock Knowledgebase. You can easily upload your files using the aws cli with the ```aws s3 sync```
-command.
+Now that you have a running Bedrock Knowledgebase you need to populate your vector store with the raw data you want to
+query. Bedrock Knowledge Bases will automatically sync raw data in an S3 bucket with the Vector database powering
+your Knowledge Base. To finish deployment of the app, you need to upload your raw text data to the Knowledge Base source
+S3 bucket.
 
-1. Locate the KnowledgeBaseSourceBucketName from the CDK output
-2. Navigate to the root directory where your files are located
-3. Upload files ```aws s3 sync . s3://{BUCKET_NAME_HERE}```
+1. Locate the bucket name from the CDK output (KnowledgeBaseSourceBucketArn/Name)
+2. Upload your text files, either through the AWS console or the AWS CLI.
+
+If you are testing this solution out, we recommend using the documents in
+this [open source HR manual](https://github.com/opengovfoundation/hr-manual?tab=readme-ov-file). Upload the files in
+either the markdown or PDF folders. Your Knowledge Base will then automatically sync those files to the vector database.
 
 # Finish Configuring SES
 
-By default your SES account will be in a "sandbox" state. This means that it can only deliver emails to known and
-verified recipients. To continue with testing you must either manually add a test user email address (Amazon SES->
-Identities->Create Identity) or you
-must [Request Production Access](https://docs.aws.amazon.com/ses/latest/dg/request-production-access.html)
+The mechanism for send and receiving emails is [Amazon Simple Email Service](https://aws.amazon.com/ses/). As part of
+the deployment steps you will end up with an SES Identity for a specific domain name, meaning you can freely send and
+receive emails on that domain.
+
+If you need to be able to send emails to addresses of other domains you need to move your SES account out of sandbox
+mode by [requesting production access](https://docs.aws.amazon.com/ses/latest/dg/request-production-access.html)
 
 # Test
 
-Send an email to the address defined in the "sourceEmail" context param
+Send an email to the address defined in the "sourceEmail" context param. If you opted to upload the sample HR documents
+referenced above here are some examples:
+
+> How many days of PTO do I get?
+>
 
 # Useful Commands
 
