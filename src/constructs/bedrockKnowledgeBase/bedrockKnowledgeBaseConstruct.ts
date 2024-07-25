@@ -150,7 +150,7 @@ export class BedrockKnowledgeBase extends Construct {
       "knowledgeBaseCustomResourceLambda",
       {
         entry:
-          "./src/constructs/bedrockKnowledgeBase/functions/crudKnowledgeBase.ts",
+          "./src/constructs/bedrockKnowledgeBase/custom/crudKnowledgeBase.ts",
         handler: "handler",
         runtime: Runtime.NODEJS_LATEST,
         architecture: Architecture.ARM_64,

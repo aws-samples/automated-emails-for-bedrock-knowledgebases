@@ -121,7 +121,7 @@ export class KnowledgeBaseEmailQuery extends Construct {
         {
           entry: path.join(
             __dirname,
-            "functions",
+            "custom",
             "activateAndDeactivateRuleSet.ts",
           ),
           handler: "handler",
