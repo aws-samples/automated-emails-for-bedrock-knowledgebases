@@ -62,7 +62,7 @@ following steps (square numbered steps starting on left side of diagram):
 
 OR
 
-1. When an email response is not generated automatically, a Lambda function forwards the original email to an internal
+8. When an email response is not generated automatically, a Lambda function forwards the original email to an internal
    support team for review and response to customer. Email disposition information is updated in the Amazon DynamoDB
    table.
 
