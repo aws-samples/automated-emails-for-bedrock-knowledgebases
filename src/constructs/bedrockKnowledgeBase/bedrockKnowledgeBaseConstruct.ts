@@ -1,4 +1,11 @@
-import { CfnOutput, CustomResource, Duration, Names, Stack } from "aws-cdk-lib";
+import {
+  CfnOutput,
+  CustomResource,
+  Duration,
+  Names,
+  RemovalPolicy,
+  Stack,
+} from "aws-cdk-lib";
 import {
   ArnPrincipal,
   CompositePrincipal,
@@ -9,7 +16,7 @@ import {
   Role,
   ServicePrincipal,
 } from "aws-cdk-lib/aws-iam";
-import { Architecture, Runtime } from "aws-cdk-lib/aws-lambda";
+import { Architecture, Code, Function, Runtime } from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { RetentionDays } from "aws-cdk-lib/aws-logs";
 import { Bucket } from "aws-cdk-lib/aws-s3";
@@ -17,6 +24,7 @@ import { Provider } from "aws-cdk-lib/custom-resources";
 import { Construct } from "constructs";
 import { Rule } from "aws-cdk-lib/aws-events";
 import { LambdaFunction } from "aws-cdk-lib/aws-events-targets";
+import path from "node:path";
 
 export interface IBedrockKnowledgeBaseProps {
   namePrefix: string;
@@ -119,7 +127,10 @@ export class BedrockKnowledgeBase extends Construct {
     });
 
     const sourceBucket = new Bucket(this, "KnowledgeBaseSourceBucket", {
+      bucketName: `${Names.uniqueResourceName(this, { maxLength: 40 }).toLowerCase()}-knowledgebase-source`,
       enforceSSL: true,
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
     });
     sourceBucket.grantReadWrite(this.knowledgeBaseRole);
 
@@ -139,12 +150,15 @@ export class BedrockKnowledgeBase extends Construct {
       "knowledgeBaseCustomResourceLambda",
       {
         entry:
-          "./src/constructs/bedrockKnowledgeBase/functions/crudKnowledgeBase.ts",
+          "./src/constructs/bedrockKnowledgeBase/custom/crudKnowledgeBase.ts",
         handler: "handler",
         runtime: Runtime.NODEJS_LATEST,
         architecture: Architecture.ARM_64,
         timeout: Duration.minutes(15),
         role: customResourceRole,
+        functionName: `${Names.uniqueResourceName(this, { maxLength: 40 }).toLowerCase()}-knowledgeBaseCRUDLambda`,
+        description:
+          "Lambda used to create the knowledgebase components (Opensearch Serverless Namespace, Bedrock Knowledgebase instance, etc.)",
       },
     );
 
@@ -183,7 +197,7 @@ export class BedrockKnowledgeBase extends Construct {
             new PolicyStatement({
               sid: "canStartBedrockKBIngestion",
               effect: Effect.ALLOW,
-              actions: ["bedrock:StartIngestionJob"],
+              actions: ["bedrock:StartIngestionJob", "bedrock:GetIngestionJob"],
               resources: ["*"],
             }),
           ],
@@ -197,28 +211,21 @@ export class BedrockKnowledgeBase extends Construct {
     });
 
     // Lambda to trigger a resync of data source
-    const syncDataSourceLambda = new NodejsFunction(
-      this,
-      "syncKnowledgeBaseLambda",
-      {
-        entry:
-          "./src/constructs/bedrockKnowledgeBase/functions/syncKnowledgeBase.ts",
-        handler: "handler",
-        runtime: Runtime.NODEJS_LATEST,
-        architecture: Architecture.ARM_64,
-        timeout: Duration.minutes(15),
-        role: syncKnowledgeBaseRole,
+    const syncDataSourceLambda = new Function(this, "syncKnowledgeBaseLambda", {
+      functionName: `${Names.uniqueResourceName(this, { maxLength: 40 }).toLowerCase()}-syncKnowledgeBaseLambda`,
+      runtime: Runtime.PYTHON_3_12,
+      handler: "sync_knowledge_base.handler",
+      code: Code.fromAsset(path.join(__dirname, "functions")),
+      role: syncKnowledgeBaseRole,
+      environment: {
+        KNOWLEDGE_BASE_ID:
+          bedrockKnowledgeBaseCustomResource.getAttString("knowledgeBaseId"),
+        DATA_SOURCE_ID:
+          bedrockKnowledgeBaseCustomResource.getAttString("dataSourceId"),
       },
-    );
+      timeout: Duration.minutes(15),
+    });
 
-    syncDataSourceLambda.addEnvironment(
-      "KNOWLEDGE_BASE_ID",
-      bedrockKnowledgeBaseCustomResource.getAttString("knowledgeBaseId"),
-    );
-    syncDataSourceLambda.addEnvironment(
-      "DATA_SOURCE_ID",
-      bedrockKnowledgeBaseCustomResource.getAttString("dataSourceId"),
-    );
     // EventBridge event
     sourceBucket.enableEventBridgeNotification();
     new Rule(this, "Updated KB Source", {
