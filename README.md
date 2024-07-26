@@ -14,6 +14,10 @@ This app consists of a single Stack: AutomateEmailsBedrockStack which deploys tw
 * KnowledgeBaseEmailQuery
     * A Step Functions-powered email pipeline utilizing SES, Lambda, and the previously created Bedrock Knowledge Base
 
+**Important**: this application uses various AWS services and there are costs associated with these services after the
+Free Tier usage - please see the AWS Pricing page for details. You are responsible for any AWS costs incurred. No
+warranty is implied in this example.
+
 ### Architecture
 
 <image src="./architecture_diagram.png" width="1000"/>
@@ -164,6 +168,14 @@ referenced above here are some examples:
 > How many days of PTO do I get?
 
 > To whom do I report an HR violation?
+
+# Clean Up
+
+To uninstall or tear down this stack, simply run the cdk destroy command
+
+```shell
+cdk destroy
+```
 
 # Useful Commands
 
