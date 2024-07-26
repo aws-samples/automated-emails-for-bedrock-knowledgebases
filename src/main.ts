@@ -14,7 +14,8 @@ export class AutomateEmailsBedrockStack extends Stack {
     const emailReviewDest = this.node.tryGetContext("emailReviewDest");
     const route53HostedZone = this.node.tryGetContext("route53HostedZone");
 
-    if (!emailSource) {
+    // If emailSource or emailReviewDest are not defined and this is currently a deploy operation, error
+    if ((!emailSource || !emailReviewDest) && Stack.of(this).bundlingRequired) {
       console.error(
         "You must define both emailSource and emailReviewDest at deploy time. Cannot build CDK stack.  Provide values with --context (cdk deploy --context emailSource=foo.bar@baz.com --context emailReviewDest=foo.bar@baz.com)",
       );
