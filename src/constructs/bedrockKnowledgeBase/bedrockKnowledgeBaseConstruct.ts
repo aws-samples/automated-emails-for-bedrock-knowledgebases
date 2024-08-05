@@ -62,7 +62,9 @@ export class BedrockKnowledgeBase extends Construct {
                   "bedrock:*DataSource",
                   "iam:PassRole",
                 ],
-                resources: ["*"],
+                resources: [
+                  `arn:aws:bedrock:${Stack.of(this).region}:${Stack.of(this).account}:knowledge-base/*`,
+                ],
               }),
             ],
           }),
@@ -152,7 +154,7 @@ export class BedrockKnowledgeBase extends Construct {
         entry:
           "./src/constructs/bedrockKnowledgeBase/custom/crudKnowledgeBase.ts",
         handler: "handler",
-        runtime: Runtime.NODEJS_LATEST,
+        runtime: Runtime.NODEJS_20_X,
         architecture: Architecture.ARM_64,
         timeout: Duration.minutes(15),
         role: customResourceRole,
