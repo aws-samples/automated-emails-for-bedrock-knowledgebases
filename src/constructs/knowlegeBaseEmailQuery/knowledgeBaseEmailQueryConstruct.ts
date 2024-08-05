@@ -125,7 +125,7 @@ export class KnowledgeBaseEmailQuery extends Construct {
             "activateAndDeactivateRuleSet.ts",
           ),
           handler: "handler",
-          runtime: Runtime.NODEJS_LATEST,
+          runtime: Runtime.NODEJS_20_X,
           architecture: Architecture.ARM_64,
           timeout: Duration.seconds(30),
           role: new Role(this, "activateAndDeactivateRuleSetLambdaRole", {
@@ -350,6 +350,7 @@ export class KnowledgeBaseEmailQuery extends Construct {
           destination: stepFunctionLogGroup,
           level: LogLevel.ALL,
         },
+        tracingEnabled: true,
       },
     );
 

@@ -1,7 +1,8 @@
-import { App, Stack, StackProps } from "aws-cdk-lib";
+import { App, Aspects, Stack, StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { BedrockKnowledgeBase } from "./constructs/bedrockKnowledgeBase/bedrockKnowledgeBaseConstruct";
 import { KnowledgeBaseEmailQuery } from "./constructs/knowlegeBaseEmailQuery/knowledgeBaseEmailQueryConstruct";
+import { AwsSolutionsChecks, NagSuppressions } from "cdk-nag";
 
 export class AutomateEmailsBedrockStack extends Stack {
   constructor(scope: Construct, id: string, props: StackProps) {
@@ -50,8 +51,41 @@ const devEnv = {
 
 const app = new App();
 
-new AutomateEmailsBedrockStack(app, "automate-emails-bedrock-dev", {
-  env: devEnv,
-});
+Aspects.of(app).add(
+  new AwsSolutionsChecks({
+    verbose: true,
+  }),
+);
+
+const stack = new AutomateEmailsBedrockStack(
+  app,
+  "automate-emails-bedrock-dev",
+  {
+    env: devEnv,
+  },
+);
+
+NagSuppressions.addStackSuppressions(stack, [
+  {
+    id: "AwsSolutions-IAM4",
+    reason: "Demonstration stack - allowing AWS managed policies",
+  },
+]);
+
+NagSuppressions.addStackSuppressions(stack, [
+  {
+    id: "AwsSolutions-IAM5",
+    reason:
+      "Demonstration stack - allowing wildcard permissions for CDK resources",
+  },
+]);
+
+NagSuppressions.addStackSuppressions(stack, [
+  {
+    id: "AwsSolutions-S1",
+    reason:
+      "Demonstration stack - allowing S3 bucket to disable access logging",
+  },
+]);
 
 app.synth();
