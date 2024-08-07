@@ -15,7 +15,9 @@ This app consists of a single Stack: AutomateEmailsBedrockStack which deploys tw
     * A Step Functions-powered email pipeline utilizing SES, Lambda, and the previously created Bedrock Knowledge Base
 
 **Important**: this application uses various AWS services and there are costs associated with these services after the
-Free Tier usage - please see the AWS Pricing page for details. You are responsible for any AWS costs incurred. No
+Free Tier usage - please see
+the [AWS Pricing](https://aws.amazon.com/pricing)
+page for details. You are responsible for any AWS costs incurred. No
 warranty is implied in this example.
 
 ### Architecture
@@ -33,8 +35,13 @@ right-hand side of diagram):
 2. Amazon S3 invokes an AWS Lambda function to synchronize the data source with the knowledge base.
 3. The Lambda functions starts data ingestion by calling the StartIngestionJob API function.
 4. The knowledge base splits the documents in the data source into manageable chunks for efficient retrieval. The
-   knowledge base is set up to use Amazon OpenSearch Serverless as its vector store and an Amazon Titan embedding text
-   model to create the embeddings. In this step, Knowledge Bases for Amazon Bedrock converts the chunks to embeddings
+   knowledge base is set up to
+   use [Amazon OpenSearch Serverless](https://aws.amazon.com/opensearch-service/features/serverless/) as its vector
+   store and an [Amazon Titan embedding text
+   model](https://docs.aws.amazon.com/bedrock/latest/userguide/titan-embedding-models.html) to create the embeddings. In
+   this
+   step, [Knowledge Bases for Amazon Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base.html)
+   converts the chunks to embeddings
    and writes to a vector index in the OpenSearch vector store, while maintaining a mapping to the original document.
    For more information about vector stores, see Set up a vector index for your knowledge base in a supported vector
    store. For more information about supported embedding models, see Supported regions and models for Knowledge bases
