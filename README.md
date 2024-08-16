@@ -24,73 +24,85 @@ warranty is implied in this example.
 
 <image src="./architecture_diagram.png" width="1000"/>
 
-The solution architecture provides for two distinct functions: populating the knowledge base with domain documents to
-support RAG and automating the response to email inquiries.
+To populate the Knowledge base in the architecture workflow, follow these steps (with lettered call-outs on the
+right-hand side of the diagram).
 
-The architecture workflow for populating the Knowledge base includes the following steps (round numbered callouts on
-right-hand side of diagram):
+The user uploads company and domain specific information (A), like policy manuals to
+an [Amazon Simple Storage](https://aws.amazon.com/s3/) (Amazon
+S3) bucket (B) designated as the knowledge base data source.
 
-1. A user uploads documents which contain company and domain specific information, such as policy manuals, to an Amazon
-   Simple Storage Service (Amazon S3) bucket configured as the knowledge base data source.
-2. Amazon S3 invokes an AWS Lambda function to synchronize the data source with the knowledge base.
-3. The Lambda functions starts data ingestion by calling the StartIngestionJob API function.
-4. The knowledge base splits the documents in the data source into manageable chunks for efficient retrieval. The
-   knowledge base is set up to
-   use [Amazon OpenSearch Serverless](https://aws.amazon.com/opensearch-service/features/serverless/) as its vector
-   store and an [Amazon Titan embedding text
-   model](https://docs.aws.amazon.com/bedrock/latest/userguide/titan-embedding-models.html) to create the embeddings. In
-   this
-   step, [Knowledge Bases for Amazon Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base.html)
-   converts the chunks to embeddings
-   and writes to a vector index in the OpenSearch vector store, while maintaining a mapping to the original document.
-   For more information about vector stores, see Set up a vector index for your knowledge base in a supported vector
-   store. For more information about supported embedding models, see Supported regions and models for Knowledge bases
-   for Amazon Bedrock.
+Amazon S3 invokes an [AWS Lambda](https://aws.amazon.com/lambda/) function (C) to synchronize the data source with the
+knowledge base.
+
+The Lambda function (D) starts data ingestion by calling the StartIngestionJob API function.
+
+The knowledge base (6) splits the documents in the data source into manageable chunks for efficient retrieval. The
+knowledge base is set up to
+use [Amazon OpenSearch Serverless](https://aws.amazon.com/opensearch-service/features/serverless/) (7) as its vector
+store and an [Amazon Titan](https://aws.amazon.com/bedrock/titan/) embedding text
+model to create the embeddings. During this step, the chunks are converted to embeddings and stored in a vector index in
+the OpenSearch vector store for Knowledge Bases of Amazon Bedrock, while also keeping track of the original document.
 
 The architecture workflow for automating email responses using generative AI with the knowledge base includes the
-following steps (square numbered steps starting on left side of diagram):
+following steps (numbered steps starting on left side of diagram):
 
-1. A customer sends a natural language email inquiry to an address configured within the company’s domain, such as
-   info@example.com.
-2. Amazon Simple Email Service receives the email and stores the entire email content to an Amazon S3 bucket with the
-   unique email identifier as the object key.
-3. An Amazon EventBridge rule is triggered upon receipt of the email in the Amazon S3 bucket and starts an AWS Step
-   Function to coordinate the generation and send of the email response.
-4. A Lambda function retrieves the email content from Amazon S3 to pass onto the next Lambda function.
-5. The email identifier and a received timestamp is recorded in an Amazon DynamoDB table. The DynamoDB table can be used
-   to track and analyze the generated email responses.
-6. A Lambda function extracts the body of the email inquiry and constructs a prompt query based on the email body, then
-   invokes the RetrieveAndGenerate API function of Amazon Bedrock to generate a response.
-7. Knowledge Bases for Amazon Bedrock uses the Amazon Titan embedding model, converts the prompt query to a vector, and
-   finds chunks that are semantically similar. The prompt is then augmented with the chunks that are retrieved from the
-   knowledge base. The prompt alongside the additional context is then sent to an LLM for response generation. In this
-   solution, we use Anthropic Claude Sonnet 3.0 as our LLM to generate user responses using additional context. Claude
-   Sonnet 3.0 is a fast, affordable, and very capable model that can handle a range of tasks, including casual dialogue,
-   text analysis, summarization, and document question-answering.
-8. A Lambda function constructs an email reply from the generated response and transmits the email reply via Amazon
-   Simple Email Service to the customer. Email tracking and disposition information is updated in the Amazon DynamoDB
-   table.
+A customer (1) sends a natural language email inquiry to an address configured within your domain, such as
+[info@example.com](mailto:info@example.com).
+
+[Amazon Simple Email Service](https://docs.aws.amazon.com/ses/latest/dg/Welcome.html) (2) receives the email and stores
+the entire email content to an Amazon S3 bucket with the
+unique email identifier as the object key.
+
+An [Amazon EventBridge](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-what-is.html) (3) rule is triggered
+upon receipt of the email in the Amazon S3 bucket and starts an [AWS Step
+Function](https://docs.aws.amazon.com/step-functions/latest/dg/welcome.html) to coordinate the generation and send of
+the email response.
+
+A Lambda function (4) retrieves the email content from Amazon S3.
+
+The email identifier and a received timestamp (5) is recorded in
+an [Amazon DynamoDB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html) table. You can
+utilize the DynamoDB
+table to monitor and analyze the email responses that are generated.
+
+By using the body of the email inquiry, the Lambda function (6) creates a prompt query and invokes Amazon Bedrock's
+RetrieveAndGenerate API function to generate a response.
+
+Knowledge Bases for Amazon Bedrock use the Amazon Titan embedding model to convert the prompt query to a vector (7), and
+then find chunks that are semantically similar. The prompt is then augmented with the chunks that are retrieved from the
+knowledge base. We then sent the prompt alongside the additional context to an LLM for response generation. In this
+solution, we use [Anthropic Claude Sonnet 3.0](https://aws.amazon.com/bedrock/claude/) as our LLM to generate user
+responses using additional context. The Claude
+Sonnet 3.0 model is fast, affordable, and versatile, capable of handling various tasks like casual dialogue, text
+analysis, summarization, and document question-answering.
+
+A Lambda function (8) constructs an email reply from the generated response and transmits the email reply via Amazon
+Simple Email Service to the customer. Email tracking and disposition information is updated in the Amazon DynamoDB
+table.
 
 OR
 
-8. When an email response is not generated automatically, a Lambda function forwards the original email to an internal
-   support team for review and response to customer. Email disposition information is updated in the Amazon DynamoDB
-   table.
+When there's no automated email response, a Lambda function (9) will forward the original email to an internal support
+team for them to review and respond to the customer. It updates then email disposition information in the Amazon
+DynamoDB table.
 
-# Pre-reqs
+# Prerequisites
 
-1. You have a local machine or VM on which you can install and run AWS CLI tools
-2. You have followed the [getting started steps](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html) for AWS
-   CDK to prepare your local environment to deploy the CDK stack
-3. You have bootstrapped your environment `cdk bootstrap aws://{ACCOUNT_NUMBER}/{REGION}`
-4. You own a valid domain name and have configuration rights over it. NOTE: If you have a domain name registered in
-   Route53 and managed in this same account, this cdk will configure SES for you. If your domain is managed elsewhere
-   then some manual steps will be necessary (see Deployment Steps below).
-5. You have enabled the Bedrock models used for embedding and querying.
-   See [documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access.html#model-access-add) for more
-   info. In the default configuration, these are the ones to enable:
-    1. Amazon Titan Text Embeddings V2
-    2. Anthropic Claude 3 Sonnet
+To set up this solution, complete the following prerequisites:
+
+1. Local machine or VM on which you can install and run AWS CLI tools
+
+2. Local environment prepared to deploy the CDK stack as documented
+   in [Getting started with the AWS CDK](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html).
+
+3. Valid domain name with configuration rights over it. NOTE: If you have a domain name registered in Route53 and
+   managed in this same account, this CDK will configure Amazon Simple Email Service for you. If your domain is managed
+   elsewhere then some manual steps will be necessary (see Deployment Steps below).
+
+4. Amazon Bedrock models enabled for embedding and querying. See documentation on how to enable model access. In the
+   default configuration, the following models are required to be enabled:
+    - Amazon Titan Text Embeddings V2
+    - Anthropic Claude 3 Sonnet
 
 # Context Values
 
