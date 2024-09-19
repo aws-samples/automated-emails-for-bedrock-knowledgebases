@@ -62,9 +62,7 @@ export class BedrockKnowledgeBase extends Construct {
                   "bedrock:*DataSource",
                   "iam:PassRole",
                 ],
-                resources: [
-                  `arn:aws:bedrock:${Stack.of(this).region}:${Stack.of(this).account}:knowledge-base/*`,
-                ],
+                resources: ["*"],
               }),
             ],
           }),
