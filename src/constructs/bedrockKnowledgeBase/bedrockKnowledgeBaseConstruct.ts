@@ -129,7 +129,6 @@ export class BedrockKnowledgeBase extends Construct {
     });
 
     const sourceBucket = new Bucket(this, "KnowledgeBaseSourceBucket", {
-      bucketName: `${Names.uniqueResourceName(this, { maxLength: 40 }).toLowerCase()}-knowledgebase-source`,
       enforceSSL: true,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,

@@ -55,7 +55,6 @@ export class KnowledgeBaseEmailQuery extends Construct {
     super(scope, id);
 
     const bucket = new Bucket(this, "EmailContentsBucket", {
-      bucketName: `${Names.uniqueResourceName(this, { maxLength: 40 }).toLowerCase()}-emailcontents`,
       enforceSSL: true,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
