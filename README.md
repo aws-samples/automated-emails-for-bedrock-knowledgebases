@@ -71,9 +71,9 @@ RetrieveAndGenerate API function to generate a response.
 Knowledge Bases for Amazon Bedrock use the Amazon Titan embedding model to convert the prompt query to a vector (7), and
 then find chunks that are semantically similar. The prompt is then augmented with the chunks that are retrieved from the
 knowledge base. We then sent the prompt alongside the additional context to an LLM for response generation. In this
-solution, we use [Anthropic Claude Sonnet 3.0](https://aws.amazon.com/bedrock/claude/) as our LLM to generate user
+solution, we use [Anthropic Claude Sonnet 3.5](https://aws.amazon.com/bedrock/claude/) as our LLM to generate user
 responses using additional context. The Claude
-Sonnet 3.0 model is fast, affordable, and versatile, capable of handling various tasks like casual dialogue, text
+Sonnet 3.5 model is fast, affordable, and versatile, capable of handling various tasks like casual dialogue, text
 analysis, summarization, and document question-answering.
 
 A Lambda function (8) constructs an email reply from the generated response and transmits the email reply via Amazon
@@ -102,7 +102,7 @@ To set up this solution, complete the following prerequisites:
 4. Amazon Bedrock models enabled for embedding and querying. See documentation on how to enable model access. In the
    default configuration, the following models are required to be enabled:
     - Amazon Titan Text Embeddings V2
-    - Anthropic Claude 3 Sonnet
+    - Anthropic Claude 3.5 Sonnet
 
 # Context Values
 
@@ -110,14 +110,14 @@ This app is configurable via a set of values defined in
 the [CDK Context](https://docs.aws.amazon.com/cdk/v2/guide/context.html). Many of these values have defaults but may be
 overridden via the --context flag when synth-ing or deploying
 
-| Context Value     | Description                                                                                               | Default                                                                             |
-|-------------------|-----------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
-| emailSource       | The email address to receive queries on                                                                   | NONE                                                                                |
-| emailReviewDest   | The email address to which any messages that fail to generate a response from the knowledge base get sent | NONE                                                                                |
-| namePrefix        | A string character prefix to give uniqueness to the generated resources                                   | "automate-emails-bedrock"                                                           |
-| embedModelArn     | The ARN of the Bedrock embeddings model                                                                   | arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v2:0            |
-| queryModelArn     | The ARN of the Bedrock querying model                                                                     | arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-sonnet-20240229-v1:0 |
-| route53HostedZone | If using a Route53 Public Hosted Zone include the name here for auto-configuration of SES                 | NONE                                                                                |
+| Context Value     | Description                                                                                               | Default                                                                               |
+|-------------------|-----------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------|
+| emailSource       | The email address to receive queries on                                                                   | NONE                                                                                  |
+| emailReviewDest   | The email address to which any messages that fail to generate a response from the knowledge base get sent | NONE                                                                                  |
+| namePrefix        | A string character prefix to give uniqueness to the generated resources                                   | "automate-emails-bedrock"                                                             |
+| embedModelArn     | The ARN of the Bedrock embeddings model                                                                   | arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v2:0              |
+| queryModelArn     | The ARN of the Bedrock querying model                                                                     | arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-5-sonnet-20240620-v1:0 |
+| route53HostedZone | If using a Route53 Public Hosted Zone include the name here for auto-configuration of SES                 | NONE                                                                                  |
 
 # Deployment Steps
 
